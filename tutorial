@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Simple stream your media with Flask Python Web framework tutorial!</title>
+        <link rel="stylesheet" href="https://www.boxcontrol.net/theme/css/main.css" />
+        <link href="https://www.boxcontrol.net/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="BoxControL Atom Feed" />
+        <link href="https://www.boxcontrol.net/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="BoxControL RSS Feed" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="https://www.boxcontrol.net/">BoxControL </a></h1>
+                <nav><ul>
+                    <li><a href="https://www.boxcontrol.net/pages/contact.html">Contact</a></li>
+                    <li><a href="https://www.boxcontrol.net/category/linux.html">Linux</a></li>
+                    <li class="active"><a href="https://www.boxcontrol.net/category/python.html">Python</a></li>
+                    <li><a href="https://www.boxcontrol.net/category/quick-tips.html">Quick Tips</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="https://www.boxcontrol.net/simple-stream-your-media-with-flask-python-web-framework-tutorial.html" rel="bookmark"
+           title="Permalink to Simple stream your media with Flask Python Web framework tutorial!">Simple stream your media with Flask Python Web framework tutorial!</a></h1>
+<a href="http://twitter.com/share" class="twitter-share-button" data-count="horizontal" data-via="boxcontrol">Tweet</a><script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2014-02-09T00:00:00">
+                Published: Sun 09 February 2014
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="https://www.boxcontrol.net/author/admin.html">Admin</a>
+        </address>
+<p>In <a href="https://www.boxcontrol.net/category/python.html">Python</a>. </p>
+<p>tags: <a href="https://www.boxcontrol.net/tag/python.html">python</a> <a href="https://www.boxcontrol.net/tag/flask.html">flask</a> <a href="https://www.boxcontrol.net/tag/media.html">media</a> </p>
+</footer><!-- /.post-info -->      <div class="section" id="introduction">
+<h2>Introduction</h2>
+<p>In this tutorial, we will build some simple media application using flask python web framework. It's work in progress so there will be updates which I will add when I get the working code. Why media application? I have some spare VPS's and wanted to make good use of them. There is also more then one device in my house that I would like to get media at, but I hate time involved in copying stuff from one device to other, also installing all needed software for different devices. So why not make some web based media application that needs noting more then modern web browser on all devices? Also I hope to get more familiar with flask and html5 while building something useful.</p>
+</div>
+<div class="section" id="prerequisites">
+<h2>Prerequisites</h2>
+<p>First you will need <tt class="docutils literal">python 2.7</tt> and <tt class="docutils literal">Flask</tt>. Like in previous articles I would suggest having <tt class="docutils literal">pip</tt> installed. If you already have python and if you don't want to mess up your current python setup, then you should install virtual environment and work with that. With virtual environment you also wont need root access if you are on linux. For linux debian distro's:</p>
+<div class="highlight"><pre>apt-get install python python-pip
+</pre></div>
+<p>then you install flask and virtual environment</p>
+<div class="highlight"><pre>pip install virtualenv
+</pre></div>
+<p>if you don't use virtual environment then just install flask now with:</p>
+<div class="highlight"><pre>pip install flask
+</pre></div>
+<p>for those of you that want to use virtual environment, first create one:</p>
+<div class="highlight"><pre>python virtualenv.py venv
+</pre></div>
+<p>current python setup from your machine will be copied inside of <tt class="docutils literal">venv</tt> directory, now you should start virtual environment with:</p>
+<div class="highlight"><pre><span class="nb">source </span>venv/bin/activate
+</pre></div>
+<p>after that just install all modules with <tt class="docutils literal">pip</tt>, like you would do on regular python setup.</p>
+</div>
+<div class="section" id="directory-structure">
+<h2>Directory structure</h2>
+<p>This is structure I have made for this app:</p>
+<div class="highlight"><pre>- flaskmedia
+        - static
+                - music
+                - video
+                - image
+        - templates
+</pre></div>
+<p><tt class="docutils literal">static</tt> and <tt class="docutils literal">templates</tt> directories are for our HTML and CSS files, which we will add at some point.</p>
+</div>
+<div class="section" id="listing-files-in-directory-with-python">
+<h2>Listing files in directory with python</h2>
+<p>Obviously first thing we will need is to list all files in our media directory. Let's create our flaskmedia/run.py file and test for music files first:</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">render_template</span>
+
+<span class="n">music_dir</span> <span class="o">=</span> <span class="s">&#39;/home/flask/flaskmedia/static/music&#39;</span>
+<span class="n">video_dir</span> <span class="o">=</span> <span class="s">&#39;/home/flask/flaskmedia/static/video&#39;</span>
+<span class="n">image_dir</span> <span class="o">=</span> <span class="s">&#39;/home/flask/flaskmedia/static/image&#39;</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="nd">@app.route</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+<span class="nd">@app.route</span><span class="p">(</span><span class="s">&#39;/home&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="n">music_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">music_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;mp3&#39;</span><span class="p">)]</span>
+    <span class="n">music_files_number</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">music_files</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;index.html&quot;</span><span class="p">,</span>
+                        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Home&#39;</span><span class="p">,</span>
+                        <span class="n">music_files_number</span> <span class="o">=</span> <span class="n">music_files_number</span><span class="p">,</span>
+                        <span class="n">music_files</span> <span class="o">=</span> <span class="n">music_files</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span> <span class="o">=</span> <span class="s">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">debug</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+<p>Like with any python file, we first import needed <tt class="docutils literal">modules</tt>, then define <tt class="docutils literal">variables</tt> in this case global variables are location of our files, music, video and images. After that we create our app with line <tt class="docutils literal">app = Flask(__name__)</tt>. Now we need to create our first <tt class="docutils literal">view</tt>, in this case it will be view for url <tt class="docutils literal">'/'</tt> and <tt class="docutils literal">'/home'</tt>, so we define function to add all mp3 files from music directory to list <tt class="docutils literal">music_files</tt>. You will want to count number of those files that we can use later in our app. And finally with <tt class="docutils literal">return_template</tt> we generate <tt class="docutils literal">index.html</tt> with title, number of files and list of files. At the end of file we pass call to our app with <tt class="docutils literal">app.run</tt>. I have put <tt class="docutils literal">music_files</tt> list inside of view function but we can use it as global variable also, only thing is if we use it as global variable then any change in number of files inside of our directory will need restart  of our app. When you put <tt class="docutils literal">music_files</tt> list inside view function, list of files will be updated every time request to app is made, so if we add files we wont need to restart to refresh list. It's up to you to choose witch way suite your need best.</p>
+</div>
+<div class="section" id="template">
+<h2>Template</h2>
+<p>For now let's create some <tt class="docutils literal">base.html</tt> template and pass variables to it. Create file <tt class="docutils literal">flaskmedia/templaetes/base.html</tt>:</p>
+<div class="highlight"><pre><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
+
+<span class="nt">&lt;head&gt;</span>
+<span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span><span class="nt">&gt;</span>
+<span class="nt">&lt;title&gt;</span>Media Player - {{ title }}<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+{% block play%}{% endblock %}
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+<p>and <tt class="docutils literal">index.html</tt> that inherits our <tt class="docutils literal">base.html</tt>:</p>
+<div class="highlight"><pre>{% extends &#39;base.html&#39; %}
+{% block play %}
+{% for i in range(music_files_number) %}
+    <span class="nt">&lt;p&gt;</span> {{ i+1 }}) {{ music_files[i] }} <span class="nt">&lt;/p&gt;</span>
+{% endfor %}
+{% endblock %}
+</pre></div>
+<p>You will notice <tt class="docutils literal">loop</tt> that goes true our <tt class="docutils literal">music_files</tt> list and add new line to view with name of our mp3 file. This time we will only list all our music files so you should manually add some mp3's to music directory. And no need to bother with template at this point, later we will add some.</p>
+<p>At this point if you try to run your code and go to <a class="reference external" href="http://localhost:5000">http://localhost:5000</a> you will see list of files in your music directory.</p>
+</div>
+<div class="section" id="playing-music-files">
+<h2>Playing music files</h2>
+<p>To play files in our music directory we will add <tt class="docutils literal">view</tt> to <tt class="docutils literal">flaskmedia/run.py</tt> file:</p>
+<div class="highlight"><pre><span class="nd">@app.route</span><span class="p">(</span><span class="s">&#39;/&lt;filename&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">song</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&#39;play.html&#39;</span><span class="p">,</span>
+                        <span class="n">title</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span>
+                        <span class="n">music_file</span> <span class="o">=</span> <span class="n">filename</span><span class="p">)</span>
+</pre></div>
+<p>lets make <tt class="docutils literal">play.html</tt> template:</p>
+<div class="highlight"><pre><span class="p">{</span><span class="o">%</span> <span class="n">extends</span> <span class="s">&#39;base.html&#39;</span> <span class="o">%</span><span class="p">}</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">block</span> <span class="n">play</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="o">&lt;</span><span class="n">h3</span><span class="o">&gt;</span> <span class="p">{{</span> <span class="n">title</span> <span class="p">}}</span> <span class="o">&lt;/</span><span class="n">h3</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">audio</span> <span class="n">controls</span> <span class="n">autoplay</span><span class="o">&gt;</span>
+                <span class="o">&lt;</span><span class="n">source</span> <span class="n">src</span><span class="o">=</span><span class="s">&quot;static/music/{{ music_file }}&quot;</span> <span class="nb">type</span><span class="o">=</span><span class="s">&quot;audio/mp3&quot;</span><span class="o">&gt;</span>
+                <span class="n">Your</span> <span class="n">browser</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">support</span> <span class="n">this</span> <span class="n">audio</span> <span class="n">format</span><span class="o">.</span>
+        <span class="o">&lt;/</span><span class="n">audio</span><span class="o">&gt;</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endblock</span> <span class="o">%</span><span class="p">}</span>
+</pre></div>
+<p>This is basic way of playing mp3's using HTML5. There are other ways for playing music inside of HTML5, but this is efficient, since you need only modern browser and no third party plugins.</p>
+<p>If you don't wont to <tt class="docutils literal">autoplay</tt> file just delete autoplay from audio controls in <tt class="docutils literal">play.html</tt> template.</p>
+<p>Since our <tt class="docutils literal">index.html</tt> only list file names we need to add hyperlink to <tt class="docutils literal">play.html</tt>, so rewrite your <tt class="docutils literal">index.html</tt> file. New index.html file:</p>
+<div class="highlight"><pre>{% extends &#39;base.html&#39; %}
+{% block play %}
+{% for i in range(music_files_number) %}
+    <span class="nt">&lt;p&gt;&lt;a</span> <span class="na">href=</span><span class="s">&quot;/{{ music_files[i] }}&quot;</span><span class="nt">&gt;</span> {{ i+1 }}) {{ music_files[i] }} <span class="nt">&lt;/a&gt;&lt;/p&gt;</span>
+{% endfor %}
+{% endblock %}
+</pre></div>
+<p>You can run code again and try to play some song. If your browser does not support playing music you will be notified and should try with Safari, Chrome or Firefox, I have tested with this browsers list is longer.</p>
+<p>That's it for now, updates will be posted!</p>
+</div>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'bxctrl';
+        var disqus_identifier = 'simple-stream-your-media-with-flask-python-web-framework-tutorial.html';
+        var disqus_url = 'https://www.boxcontrol.net/simple-stream-your-media-with-flask-python-web-framework-tutorial.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//bxctrl.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="https://www.boxcontrol.net/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+                            <li><a href="https://www.boxcontrol.net/feeds/all.rss.xml" type="application/rss+xml" rel="alternate">rss feed</a></li>
+
+                            <li><a href="https://twitter.com/BoxControL">twitter</a></li>
+                            <li><a href="https://github.com/boxcontrol">github</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+    <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-41333473-1']);
+    _gaq.push(['_trackPageview']);
+    (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+    </script>
+<script type="text/javascript">
+    var disqus_shortname = 'bxctrl';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>
